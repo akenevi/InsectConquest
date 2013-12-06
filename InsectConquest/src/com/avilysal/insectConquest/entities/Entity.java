@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import com.avilysal.insectConquest.map.Cell;
 import com.avilysal.insectConquest.map.Map;
+import com.avilysal.insectConquest.util.Path;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
@@ -11,7 +12,7 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Disposable;
 
-public abstract class Entity{
+public abstract class Entity implements Disposable{
 	private float posX, posY, cellX, cellY, cellWidth, cellHeight;
 	private Cell cell;
 	
@@ -21,8 +22,10 @@ public abstract class Entity{
 	private Rectangle collisionRect;
 	private int health, attackType, faction;
 	private float speed, damage, attackRange;
-	private boolean selected = false;
+	
 	private Vector2 velocity;
+	private boolean selected = false;
+	private Path path;
 	
 //	Constants for the type
 	public static final int PROJECTILE = 0;
@@ -236,22 +239,62 @@ public abstract class Entity{
 	
 	
 	
-	private Cell[] rayCast(float finishX, float finishY){
-		float startX = cellX, startY = cellY;
-		ArrayList<Cell> wentThrough = new ArrayList<Cell>();
+	protected boolean rayCast(float finishX, float finishY){
+		float startX = 0, startY = 0, toXWall = 0, toYWall = 0;
 		
-		Cell[] temp = new Cell[wentThrough.size()];
-		for(int i = 0; i<temp.length; i++){
-			temp[i] = wentThrough.get(i);
+		Vector2 path = new Vector2(new Vector2(finishX, finishY).sub(posX, posY));
+		Vector2 tempV = new Vector2(posX,posY);
+		float pathAngle = path.angle();
+		
+		while(true){
+			
+			startX = tempV.x - ((int)tempV.x%cellWidth)*cellWidth; 
+			startY = tempV.y - ((int)tempV.y%cellHeight)*cellHeight;
+			toXWall = cellWidth - startX;
+			toYWall = cellHeight - startY;
+			
+			tempV = tempV.add(path.cpy().limit((float) Math.sqrt(toXWall*toXWall + toYWall*toYWall)));
+			
+			if(!map.getCell(tempV.x, tempV.y).isTraversable())
+				return false;
+			
+			if(pathAngle >= 0f && pathAngle < 90f){
+				if(tempV.x > finishX && tempV.y > finishX)
+					break;
+			} else if (pathAngle >= 90f && pathAngle < 180){
+				if(tempV.x < finishX && tempV.y > finishX)
+					break;
+			} else if (pathAngle >= 180 && pathAngle < 270){
+				if(tempV.x < finishX && tempV.y < finishY)
+					break;
+			} else if (pathAngle >= 360 && pathAngle < 0){
+				if(tempV.x > finishX && tempV.y < finishY)
+					break;
+			}
 		}
-		return temp;
+		return true;
 	}
-	private void reactivePathFollowing(){
-		
-	}
+	
 	public boolean isInLineOfSight(Entity ent){
+		return rayCast(ent.getCell().getX(), ent.getCell().getY());
+	}
+	
+	private void reactivePathFollowing(){
+		Vector2 dirVect = new Vector2(posX,posY).add(velocity.cpy().scl(10f));
+		Vector2 fov = velocity.cpy().scl(10f);
+		fov.setAngle(fov.angle()-90);
+		Vector2 rightSide = dirVect.cpy().add(fov);
+		Vector2 leftSide = dirVect.cpy().sub(fov);
 		
-		return false;
+		if(rayCast(rightSide.x, rightSide.y) && rayCast(leftSide.x, leftSide.y)){
+			//continue moving to next node
+		} else if (!rayCast(rightSide.x, rightSide.y) && rayCast(leftSide.x, leftSide.y)){
+			//obstruction on right side, turn left until cleared
+		} else if (rayCast(rightSide.x, rightSide.y) && !rayCast(leftSide.x, leftSide.y)){
+			//obstruction on left side, turn right until cleared
+		} else if (!rayCast(rightSide.x, rightSide.y) && !rayCast(leftSide.x, leftSide.y)){
+			//obstruction on both sides
+		}
 	}
 	
 	
