@@ -1,0 +1,28 @@
+! == in progress.
+* == done.
+-----------------------
+rewriting:
+!	Level
+	Main Menu Screen
+	Splash Screen
+	
+!	Entity
+	Unit
+	Builder
+	Enemy
+	Tower
+	
+*	Bag
+*	Node ( Cell )
+!	Map
+	A* Path Finding
+	
+-----------------------
+creating:
+	Wall (extends Entity)
+	Projectile (extends Entity)
+	Ant (extends Unit)
+	ModularUnit (extends Unit)
+	
+	Tower evolution screen
+	Unit evolution screen
