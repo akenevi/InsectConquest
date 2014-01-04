@@ -3,7 +3,9 @@ package com.avilysal.insectConquest.screens;
 import java.util.ArrayList;
 import java.util.Random;
 
+import com.avilysal.insectConquest.screens.Level;
 import com.avilysal.insectConquest.entities.Builder;
+import com.avilysal.insectConquest.entities.Human;
 import com.avilysal.insectConquest.map.Map;
 import com.avilysal.insectConquest.util.Bag;
 import com.badlogic.gdx.Game;
@@ -16,6 +18,7 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
@@ -41,10 +44,15 @@ public class Level implements Screen, InputProcessor{
 	private OrthographicCamera camera;
 //	Entities
 	private Random random;
-	private Bag projectiles, friendly, neutral, hostile;
+	private Bag projectiles, insectoid, neutral, human;
 //	Resource management stuff
 	private int humanDNA = 0;
 	private int insectDNA = 0;
+	
+	
+	public ShapeRenderer visualDebug;
+	
+	
 	
 	public int getHumanDNA(){
 		return humanDNA;
@@ -77,31 +85,41 @@ public class Level implements Screen, InputProcessor{
 		renderer.render();
 		
 		renderer.getSpriteBatch().begin();
-		
+		for(int i = 0; i<projectiles.size(); i++)
+			projectiles.get(i).draw(renderer.getSpriteBatch());
+		for(int i = 0; i<neutral.size(); i++)
+			neutral.get(i).draw(renderer.getSpriteBatch());
+		for(int i = 0; i<insectoid.size(); i++)
+			insectoid.get(i).draw(renderer.getSpriteBatch());
+		for(int i = 0; i<human.size(); i++)
+			human.get(i).draw(renderer.getSpriteBatch());
 		
 		//debugging purposes rendering number of containments of every cell's bag
-		font.setColor(font.getColor().r, font.getColor().g, font.getColor().b,0.5f);
+		font.setColor(0, 0, 0, 0.5f);
 		for(int column = 0; column < map.grid.length; column++)
 			for(int row = 0; row < map.grid[column].length; row++){
-				font.draw(renderer.getSpriteBatch(), ""+map.grid[column][row].getBag().size(), map.grid[column][row].getX()+13, map.grid[column][row].getY());
+				font.draw(renderer.getSpriteBatch(), ""+map.grid[column][row].getBag().size(), map.grid[column][row].getX()-4, map.grid[column][row].getY()-13);
 			}
-		font.setColor(font.getColor().r, font.getColor().g, font.getColor().b,1f);
+		font.setColor(1,0,0,1f);
 		//end debugging purposes
 		
-		
-		for(int i = 0; i<projectiles.size(); i++)
-			if (projectiles.get(i) != null)
-				projectiles.get(i).draw(renderer.getSpriteBatch());
-		for(int i = 0; i<friendly.size(); i++)
-			if (friendly.get(i) != null)
-				friendly.get(i).draw(renderer.getSpriteBatch());
-		for(int i = 0; i<neutral.size(); i++)
-			if (neutral.get(i) != null)
-				neutral.get(i).draw(renderer.getSpriteBatch());
-		for(int i = 0; i<hostile.size(); i++)
-			if (hostile.get(i) != null)
-				hostile.get(i).draw(renderer.getSpriteBatch());
 		renderer.getSpriteBatch().end();
+/*		
+		visualDebug.begin(ShapeType.Line);
+		visualDebug.setColor(1, 1, 0, 1);
+		visualDebug.line(0, 0, 200, 200);
+		visualDebug.rect(6, 100, 10, 20);
+		visualDebug.circle(470, 420, 20);
+		visualDebug.end();
+*/
+		for(int i=0; i<projectiles.size(); i++)
+			projectiles.get(i).update(delta);
+		for(int i=0; i<neutral.size(); i++)
+			neutral.get(i).update(delta);
+		for(int i=0; i<insectoid.size(); i++)
+			insectoid.get(i).update(delta);
+		for(int i=0; i<human.size(); i++)
+			human.get(i).update(delta);
 		
 		guiBatch.begin();
 		/*TODO
@@ -113,25 +131,13 @@ public class Level implements Screen, InputProcessor{
 				"\n delta time: "+Gdx.graphics.getDeltaTime()+
 				"\n cam x:"+camera.position.x+" cam y:"+camera.position.y+" cam zoom:"+camera.zoom+
 				"\n mouse x:"+Gdx.input.getX()+" mouse y:"+(Gdx.graphics.getHeight()-Gdx.input.getY())+
-				"\n arach x:"+(friendly.get(0).getPositionX())+
-				"\n arach y:"+(friendly.get(0).getPositionY())
+				"\n arach x:"+(insectoid.get(0).getPositionX())+
+				"\n arach y:"+(insectoid.get(0).getPositionY())
 				, 10, Gdx.graphics.getHeight()-25);
 //		rendering resource amounts
 		font.drawMultiLine(guiBatch, humanDNA +" human dna"+
 				"\n"+insectDNA+" insect dna", Gdx.graphics.getWidth()-150, Gdx.graphics.getHeight()-25);
 		
-		/* path finding nodes, for debugging purposes
-		if(enemy.getPath() != null)
-			for(Vector2 node : enemy.getPath().getAllPoints()){
-				Sprite nodeSprite;
-				if(enemy.getCurDest() != node)
-					nodeSprite = new Sprite(new Texture("img/pathNodeNew.png"));
-				else
-					nodeSprite = new Sprite(new Texture("img/pathNodeOld.png"));
-				nodeSprite.setPosition(node.x, node.y);
-				nodeSprite.draw(guiBatch);
-			}
-		*/
 		guiBatch.end();
 	}
 
@@ -145,10 +151,11 @@ public class Level implements Screen, InputProcessor{
 	@Override //method called upon creation
 	public void show() {
 		Gdx.input.setInputProcessor((InputProcessor) ((Game) Gdx.app.getApplicationListener()).getScreen());
-		
 		if(!initialized){
 			init();
 		}
+		createBuilder();
+		
 	}
 	@Override
 	public void hide() {
@@ -172,9 +179,9 @@ public class Level implements Screen, InputProcessor{
 		guiBatch.dispose();
 		font.dispose();
 		projectiles.clear();
-		friendly.clear();
+		insectoid.clear();
 		neutral.clear();
-		hostile.clear();
+		human.clear();
 	}
 	
 	private void init(){
@@ -184,13 +191,15 @@ public class Level implements Screen, InputProcessor{
 		map = new Map(tiledMap);
 		
 		projectiles = new Bag();
-		friendly = new Bag();
+		insectoid = new Bag();
 		neutral = new Bag();
-		hostile = new Bag();
+		human = new Bag();
 		
-		renderer = new OrthogonalTiledMapRenderer(tiledMap);
 		camera = new OrthographicCamera();
 		camera.translate(Gdx.graphics.getWidth()/2, Gdx.graphics.getHeight()/2);
+		renderer = new OrthogonalTiledMapRenderer(tiledMap);
+		visualDebug = new ShapeRenderer();
+		visualDebug.setProjectionMatrix(renderer.getSpriteBatch().getProjectionMatrix());
 //		TODO
 //		optimize camera view
 //		camera.frustum culling for rendering only that, which is in the camera view
@@ -202,21 +211,23 @@ public class Level implements Screen, InputProcessor{
 		font = new BitmapFont(Gdx.files.internal("data/font.fnt"), Gdx.files.internal("data/font.png"), false);
 		
 		initialized = true;
-		createBuilder();
 	}
 	
 	public Map getMap(){
 		return map;
 	}
 	
+	
 	private void createBuilder(){
 		int spawnIndex = random.nextInt(spawnXY.length);
-		friendly.add(new Builder(map, atlas.createSprite("Arach"), 319, 321, 10, 10));
+		insectoid.add(new Builder(visualDebug, map, atlas.createSprite("Arach"), spawnXY[spawnIndex][0], spawnXY[spawnIndex][1]));
 	}
 	
 	private void createNewEnemies(int amount){
 		for(int i=0; i<amount; i++){
-			float spawnIndex = random.nextInt();
+			int spawnIndex = random.nextInt(spawnXY.length);
+			human.add(new Human(visualDebug, map, atlas.createSprite("UnarmedHuman"), spawnXY[spawnIndex][0], spawnXY[spawnIndex][1]));
+			human.get(human.size()-1).setPathTarget(insectoid.get(0));
 		}
 	}
 	
@@ -240,8 +251,8 @@ public class Level implements Screen, InputProcessor{
 		
 		spawnXY = new float[useableTiles.size()][2];
 		for(int i=0; i<useableTiles.size(); i++){
-			spawnXY[i][0] = useableTiles.get(i).x;
-			spawnXY[i][1] = useableTiles.get(i).y;
+			spawnXY[i][0] = useableTiles.get(i).x+map.getTileWidth()/2;
+			spawnXY[i][1] = useableTiles.get(i).y+map.getTileHeight()/2;
 		}
 		System.out.println("spawn tiles set");
 	}
@@ -254,6 +265,7 @@ public class Level implements Screen, InputProcessor{
 			Gdx.app.exit();
 			break;
 		case Keys.SPACE:
+			((Game)(Gdx.app.getApplicationListener())).setScreen(new Level());
 			break;
 		case Keys.N:
 			break;
@@ -273,6 +285,8 @@ public class Level implements Screen, InputProcessor{
 			camera.translate(-cameraSpeed*camera.zoom, 0*camera.zoom);
 			camera.update();
 			break;
+		case Keys.NUM_1:
+			createNewEnemies(10);
 		default:
 			break;
 		}
@@ -292,8 +306,9 @@ public class Level implements Screen, InputProcessor{
 	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
 		switch(button){
 		case 0:
-//			Vector3 vec = new Vector3(screenX, screenY, 0);
-//			camera.unproject(vec);
+			Vector3 vec = new Vector3(screenX, screenY, 0);
+			camera.unproject(vec);
+			insectoid.get(0).setPathTo((int)vec.x, (int)vec.y);
 //			friendly.get(0).setVelocity(new Vector2(vec.x, vec.y));
 /*			if(!captured && !builderSummoned){
 				Tween.to(arach, SpriteAccessor.POSITION, (float)Math.sqrt(vec.x*vec.x + vec.y*vec.y)/200).

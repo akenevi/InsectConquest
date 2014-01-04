@@ -44,16 +44,16 @@ public class Map {
 //		Update nodes from data gathered from given map.
 		for (int column = grid.length - 1; column >= 0; column--){
 			for (int row = 0; row < grid[column].length; row++) {
-				grid[column][row] = new Cell(column * tileWidth, row * tileHeight);
+				grid[column][row] = new Cell(column * tileWidth + tileWidth/2, row * tileHeight + tileHeight/2);
 				
 //				If tile has a moving cost, save it into the node.
-				if (ground.getCell(row, column).getTile().getProperties().containsKey(traversabilityCost)) {
+				if (ground.getCell(column, row).getTile().getProperties().containsKey(traversabilityCost)) {
 					grid[column][row].setT((Double) ground.getCell(row, column).getTile().getProperties().get(traversabilityCost));
 					
 				}
 				
 //				Finding tiles with property defined by traversabilityState and setting their counterparts on grid to non-traversable.
-				if (ground.getCell(row, column).getTile().getProperties().containsKey(traversabilityState)) {
+				if (ground.getCell(column, row).getTile().getProperties().containsKey(traversabilityState)) {
 					grid[column][row].setTraversable(false);
 				} else
 					grid[column][row].setTraversable(true);
@@ -75,6 +75,9 @@ public class Map {
 	 * @param y <tt>float</tt> 
 	 * @return {@link Cell}*/
 	public Cell getCell(float x, float y){
+		if(((int)x / tileWidth) < 0 || ((int)x / tileWidth) >= grid.length ||
+		   ((int)y / tileHeight) < 0 || ((int)y / tileHeight) >= grid[((int)x / tileWidth)].length)
+			return null;
 		return grid[((int)x / tileWidth)][((int)y / tileHeight)];
 	}
 	

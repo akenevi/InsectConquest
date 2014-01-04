@@ -4,18 +4,18 @@ import com.avilysal.insectConquest.map.Map;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
-public class Builder extends Entity{
+public class InsectTower extends Entity{
 	private final int FACTION = INSECTOID;
-	private final int ATTACK_TYPE = RANGED;
+	private final int ATTACK_TYPE = MELEE;
 	private final int BASE_HEALTH = 100;
-	private final float BASE_RANGE = 100;
+	private final float BASE_RANGE = 20;
 	private final float BASE_DAMAGE = 20;
-	private final float BASE_SPEED = 80f;
+	private final float BASE_SPEED = 0f;
 	
-	private final float collisionWidth = 24;
-	private final float collisionHeight = 26;
+	private final float collisionWidth = 10;
+	private final float collisionHeight = 10;
 	
-	public Builder(ShapeRenderer visualDebug, Map map, Sprite sprite, float x, float y) {
+	public InsectTower(ShapeRenderer visualDebug, Map map, Sprite sprite, float x, float y) {
 		this.debug = visualDebug;
 		this.map = map;
 		this.sprite = sprite;
@@ -33,29 +33,20 @@ public class Builder extends Entity{
 		
 		setSpeed(BASE_SPEED);
 		setVelocity(0);
-		
-		setBehavior(PACIFIST);
-		setDebugging(true);
 	}
-
+	
 	@Override
 	public void ai(float delta) {
-		if (path != null){
-			followPath(delta);
-		}
 		applyBehavior();
 	}
-
 	@Override
 	public void attack(Entity ent) {
 		
 	}
-
 	@Override
 	public void defend(Entity ent) {
 		
 	}
-
 	@Override
 	public void die(float delta) {
 		

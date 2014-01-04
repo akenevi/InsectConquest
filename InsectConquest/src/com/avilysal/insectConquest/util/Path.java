@@ -5,7 +5,7 @@ import com.avilysal.insectConquest.map.Cell;
 public class Path {
 	
 	private Cell[] path = null;
-	private int iterator = 0;
+	private int index = 0;
 	
 	public Path(Cell[] nodes){
 		path = new Cell[nodes.length];
@@ -14,20 +14,33 @@ public class Path {
 		}
 	}
 	
+	public int getIndex(){
+		return index;
+	}
+	public Cell getCurrentPoint(){
+		if(path.length > index)
+			return path[index];
+		return null;
+	}
 	public Cell getPoint(int indexInPath){
-		iterator = indexInPath;
-		return path[indexInPath];
+		if(path.length > indexInPath && indexInPath >= 0){
+			index = indexInPath;
+			return path[index];
+		}
+		return null;
 	}
 	public Cell getNextPoint(){
-		iterator++;
-		if (iterator > path.length-1) iterator = path.length-1;
-		return path[iterator];
+		if (index+1 < path.length) 
+			return path[index+1];
+		return null;
 	}
-	
-	public Cell getPreviousPoint(){
-		iterator--;
-		if (iterator < 0) iterator = 0;
-		return path[iterator];
+	public Cell getPointFromIndex(int indexDifference){
+		if(index+indexDifference < path.length && index+indexDifference >= 0)
+			return path[index+indexDifference];
+		return null;
+	}
+	public void changeIndex(int amount){
+		index += amount;
 	}
 	
 	public Cell[] getAllPoints(){

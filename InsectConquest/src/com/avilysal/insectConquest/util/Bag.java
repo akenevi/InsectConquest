@@ -34,19 +34,6 @@ public class Bag {
       data = new Entity[capacity];
    }
    
-   /** Finds and returns specified Entity removing it from the bag, if it's not present, null is returned.
-    * @param o {@link Entity} to get.
-    * @return {@link Entity} */
-   public Entity get(Entity o){
-	   int desiredEnt = o.hashCode();
-	   for(int i = 0; i < size; i++){
-		   if(data[i] != null && desiredEnt == data[i].hashCode()){
-			   return remove(i);
-		   }
-	   }
-	   return null;
-   }
-   
    /**
     * Removes the element at the specified position in this Bag.
     * does this by overwriting it was last element then removing 

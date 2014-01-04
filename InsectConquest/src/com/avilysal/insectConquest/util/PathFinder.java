@@ -40,8 +40,8 @@ public class PathFinder implements Runnable {
 //		Calculate starting and goal nodes from given vectors, returns null if given position is out of map bounds.
 		if (fromX >= 0 && fromX <= map.grid.length * map.getTileWidth() && fromY >= 0 && fromY <= map.grid[0].length * map.getTileHeight()) {
 			if (toX >= 0 && toX <= map.grid.length * map.getTileWidth() && toY >= 0 && toY <= map.grid[0].length * map.getTileHeight()) {
-				start = map.grid[(int)(fromY) / map.getTileHeight()][(int)(fromX) / map.getTileWidth()];
-				goal = map.grid[(int)(toY) / map.getTileHeight()][(int)(toX) / map.getTileWidth()];
+				start = map.getCell(fromX, fromY);
+				goal = map.getCell(toX, toY);
 			} else
 				return null;
 		} else
