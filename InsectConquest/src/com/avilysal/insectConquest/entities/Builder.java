@@ -35,7 +35,7 @@ public class Builder extends Entity{
 		setVelocity(0);
 		
 		setBehavior(PACIFIST);
-		setDebugging(true);
+		setDebugging(false);
 	}
 
 	@Override

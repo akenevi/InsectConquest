@@ -6,6 +6,7 @@ import java.util.Random;
 import com.avilysal.insectConquest.screens.Level;
 import com.avilysal.insectConquest.entities.Builder;
 import com.avilysal.insectConquest.entities.Human;
+import com.avilysal.insectConquest.entities.Tower;
 import com.avilysal.insectConquest.map.Map;
 import com.avilysal.insectConquest.util.Bag;
 import com.badlogic.gdx.Game;
@@ -49,7 +50,7 @@ public class Level implements Screen, InputProcessor{
 	private int humanDNA = 0;
 	private int insectDNA = 0;
 	
-	
+	private boolean debugging = false;
 	public ShapeRenderer visualDebug;
 	
 	
@@ -95,13 +96,13 @@ public class Level implements Screen, InputProcessor{
 			human.get(i).draw(renderer.getSpriteBatch());
 		
 		//debugging purposes rendering number of containments of every cell's bag
-		font.setColor(0, 0, 0, 0.5f);
+/*		font.setColor(0, 0, 0, 0.5f);
 		for(int column = 0; column < map.grid.length; column++)
 			for(int row = 0; row < map.grid[column].length; row++){
 				font.draw(renderer.getSpriteBatch(), ""+map.grid[column][row].getBag().size(), map.grid[column][row].getX()-4, map.grid[column][row].getY()-13);
 			}
 		font.setColor(1,0,0,1f);
-		//end debugging purposes
+*/		//end debugging purposes
 		
 		renderer.getSpriteBatch().end();
 /*		
@@ -126,13 +127,16 @@ public class Level implements Screen, InputProcessor{
 		 * Render resources to GUI
 		 * Render enemies left to GUI
 		 */
+		int ents = projectiles.size() + neutral.size() + insectoid.size() + human.size();
+		
 		font.drawMultiLine(guiBatch, " fps:"+Gdx.graphics.getFramesPerSecond()+
-				"\n memory usage: "+Gdx.app.getJavaHeap()/1000000L+" mb"+
+				"\n memory usage: "+Gdx.app.getJavaHeap()/1000L+" kb"+
 				"\n delta time: "+Gdx.graphics.getDeltaTime()+
-				"\n cam x:"+camera.position.x+" cam y:"+camera.position.y+" cam zoom:"+camera.zoom+
-				"\n mouse x:"+Gdx.input.getX()+" mouse y:"+(Gdx.graphics.getHeight()-Gdx.input.getY())+
-				"\n arach x:"+(insectoid.get(0).getPositionX())+
-				"\n arach y:"+(insectoid.get(0).getPositionY())
+				"\n cam x: "+camera.position.x+" cam y:"+camera.position.y+" cam zoom:"+camera.zoom+
+				"\n mouse x: "+Gdx.input.getX()+" mouse y:"+(Gdx.graphics.getHeight()-Gdx.input.getY())+
+				"\n arach x: "+(insectoid.get(0).getPositionX())+
+				"\n arach y: "+(insectoid.get(0).getPositionY())+
+				"\n entities: "+ents
 				, 10, Gdx.graphics.getHeight()-25);
 //		rendering resource amounts
 		font.drawMultiLine(guiBatch, humanDNA +" human dna"+
@@ -221,6 +225,7 @@ public class Level implements Screen, InputProcessor{
 	private void createBuilder(){
 		int spawnIndex = random.nextInt(spawnXY.length);
 		insectoid.add(new Builder(visualDebug, map, atlas.createSprite("Arach"), spawnXY[spawnIndex][0], spawnXY[spawnIndex][1]));
+		insectoid.get(insectoid.size()-1).setDebugging(debugging);
 	}
 	
 	private void createNewEnemies(int amount){
@@ -228,6 +233,7 @@ public class Level implements Screen, InputProcessor{
 			int spawnIndex = random.nextInt(spawnXY.length);
 			human.add(new Human(visualDebug, map, atlas.createSprite("UnarmedHuman"), spawnXY[spawnIndex][0], spawnXY[spawnIndex][1]));
 			human.get(human.size()-1).setPathTarget(insectoid.get(0));
+			human.get(human.size()-1).setDebugging(debugging);
 		}
 	}
 	
@@ -268,6 +274,7 @@ public class Level implements Screen, InputProcessor{
 			((Game)(Gdx.app.getApplicationListener())).setScreen(new Level());
 			break;
 		case Keys.N:
+			insectoid.add(new Tower(visualDebug, map, atlas.createSprite("BlankTower"), insectoid.get(0).getPositionX(), insectoid.get(0).getPositionY()));
 			break;
 		case Keys.UP:
 			camera.translate(0*camera.zoom, cameraSpeed*camera.zoom);

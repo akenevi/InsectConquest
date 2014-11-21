@@ -9,6 +9,7 @@ import com.avilysal.insectConquest.map.Map;
 import com.avilysal.insectConquest.util.Bag;
 import com.avilysal.insectConquest.util.Path;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -23,6 +24,9 @@ public abstract class Entity implements Disposable{
 	
 	protected Map map;
 	protected Sprite sprite;
+	protected Animation currentAnimation;
+	protected boolean animated = false;
+	protected float animStateTime = 0f;
 	
 	private Rectangle collisionRect;
 	private int health, attackType, faction, behavior;
@@ -59,9 +63,22 @@ public abstract class Entity implements Disposable{
 	/** Override of {@link Sprite#draw(com.badlogic.gdx.graphics.g2d.Batch)} to include {@link #update(float)} method.
 	 * @param batch SpriteBatch to draw onto.*/
 	public void draw(Batch batch){
-//		update(Gdx.graphics.getDeltaTime());
-		sprite.draw(batch);
+		update(Gdx.graphics.getDeltaTime());
+		if(animated){
+			animStateTime += Gdx.graphics.getDeltaTime();
+			currentAnimation.getKeyFrame(animStateTime);
+		} else {
+			sprite.draw(batch);
+		}
 	}
+	
+	public void setAnimation(Animation newAnimation){
+		if(!animated)
+			animated = true;
+		animStateTime = 0f;
+		currentAnimation = newAnimation;
+	}
+	
 	/** If {@link #health} < 0 calls {@link #die(float)}, otherwise calls {@link #ai(float)}. Passes delta time to the method called.
 	 * @param delta <tt>float</tt> equals to the return value of <tt>Gdx.graphics.getDeltaTime()</tt>.*/
 	public void update(float delta){

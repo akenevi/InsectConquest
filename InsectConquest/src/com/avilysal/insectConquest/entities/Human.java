@@ -35,7 +35,7 @@ public class Human extends Entity{
 		setVelocity(0);
 		
 		setBehavior(AGRESSIVE);
-		setDebugging(true);
+		setDebugging(false);
 	}
 
 	@Override

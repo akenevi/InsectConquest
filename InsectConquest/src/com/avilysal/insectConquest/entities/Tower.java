@@ -4,18 +4,21 @@ import com.avilysal.insectConquest.map.Map;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
-public class InsectTower extends Entity{
-	private final int FACTION = INSECTOID;
+public class Tower extends Entity{
+	private final int FACTION = NEUTRAL;
 	private final int ATTACK_TYPE = MELEE;
 	private final int BASE_HEALTH = 100;
 	private final float BASE_RANGE = 20;
 	private final float BASE_DAMAGE = 20;
 	private final float BASE_SPEED = 0f;
 	
+	private int upgrade_state = 0;
+	private boolean upgrading = false;
+	
 	private final float collisionWidth = 10;
 	private final float collisionHeight = 10;
 	
-	public InsectTower(ShapeRenderer visualDebug, Map map, Sprite sprite, float x, float y) {
+	public Tower(ShapeRenderer visualDebug, Map map, Sprite sprite, float x, float y) {
 		this.debug = visualDebug;
 		this.map = map;
 		this.sprite = sprite;
@@ -33,6 +36,11 @@ public class InsectTower extends Entity{
 		
 		setSpeed(BASE_SPEED);
 		setVelocity(0);
+	}
+	
+	public void upgrade(int upgNum){
+		upgrade_state = upgNum;
+		upgrading = true;
 	}
 	
 	@Override
